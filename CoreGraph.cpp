@@ -6,55 +6,61 @@
  */
 bool Graph::loadFromCSV(const std::string& filename) {
     std::ifstream file(filename);
-    if (!file.is_open()) return false;
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file " << filename << std::endl;
+        return false;
+    }
 
     std::string line;
-    // Skip the header row [cite: 65]
-    if (!std::getline(file, line)) return false;
+    std::getline(file, line); // skip header
 
     while (std::getline(file, line)) {
         if (line.empty()) continue;
-        
-        std::stringstream ss(line);
-        std::string origin, dest, originCity, destCity, distStr, costStr;
 
-        // Tokenize the CSV columns [cite: 65]
-        std::getline(ss, origin, ',');
-        std::getline(ss, dest, ',');
-        std::getline(ss, originCity, ',');
-        std::getline(ss, destCity, ',');
-        std::getline(ss, distStr, ',');
-        std::getline(ss, costStr, ',');
+        std::vector<std::string> fields;
+        std::string current;
+        bool inQuotes = false;
 
-        // Handle Origin Airport: extract state for Task 3 logic [cite: 42, 67]
-        int u = getAirportIndex(origin);
-        if (u == -1) {
-            airports.push_back(Airport(origin, originCity, this->extractState(originCity)));
-            adj.push_back(std::vector<Edge>());
-            u = airports.size() - 1;
+        for (int i = 0; i < (int)line.size(); i++) {
+            char c = line[i];
+
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            }
+            else if (c == ',' && !inQuotes) {
+                fields.push_back(current);
+                current.clear();
+            }
+            else {
+                current += c;
+            }
+        }
+        fields.push_back(current);
+
+        if (fields.size() != 6) {
+            std::cerr << "Skipping bad row: " << line << std::endl;
+            continue;
         }
 
-        // Handle Destination Airport
-        int v = getAirportIndex(dest);
-        if (v == -1) {
-            airports.push_back(Airport(dest, destCity, this->extractState(destCity)));
-            adj.push_back(std::vector<Edge>());
-            v = airports.size() - 1;
-        }
+        std::string origin = fields[0];
+        std::string dest = fields[1];
+        std::string originCity = fields[2];
+        std::string destCity = fields[3];
+        std::string distStr = fields[4];
+        std::string costStr = fields[5];
 
-        // Task 1: Add edge with two weights: Distance and Cost [cite: 37, 38]
-        try {
-            double distance = std::stod(distStr);
-            double cost = std::stod(costStr);
-            adj[u].push_back(Edge(v, distance, cost));
+        int u = addOrFindAirport(origin, originCity);
+        int v = addOrFindAirport(dest, destCity);
 
-            // Task 5: Track inbound/outbound for connection counts [cite: 47, 48]
-            airports[u].outboundCount++;
-            airports[v].inboundCount++;
-        } catch (...) {
-            continue; 
-        }
+        double distance = std::stod(distStr);
+        double cost = std::stod(costStr);
+
+        adj[u].push_back(Edge(v, distance, cost));
+
+        airports[u].outboundCount++;
+        airports[v].inboundCount++;
     }
+
     file.close();
     return true;
 }
