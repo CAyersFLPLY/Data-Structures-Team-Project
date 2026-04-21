@@ -140,3 +140,16 @@ int Graph::findAirportIndex(const std::string& code) const {
     }
     return -1;
 }
+
+int Graph::addOrFindAirport(const std::string& code, const std::string& cityFull) {
+    int existingIdx = getAirportIndex(code);
+    if (existingIdx != -1) return existingIdx;
+
+    size_t commaPos = cityFull.find(',');
+    std::string city = (commaPos != std::string::npos) ? cityFull.substr(0, commaPos) : cityFull;
+    std::string state = (commaPos != std::string::npos) ? cityFull.substr(commaPos + 2) : "";
+
+    airports.push_back(Airport(code, city, state));
+    adj.push_back(std::vector<Edge>());
+    return airports.size() - 1;
+}
