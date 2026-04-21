@@ -1,4 +1,4 @@
-#include <Graph.h>
+#include <CoreGraph.h>
 #include <vector>
 
 class UndirectedEdge {
@@ -23,11 +23,11 @@ public:
 class Spanning {
 public:
     // Task 6
-    //static std::vector<UndirectedEdge> buildUndirectedGraph(const Graph& g);
+    static std::vector<UndirectedEdge> buildUndirectedGraph(const Graph& g);
 
     // Task 7 (Prim)
-    //static void primMST(const Graph& g);
+    static void primMST(const Graph& g);
 
     // Task 8 (Kruskal)
-    //static void kruskalMST(const Graph& g);
+    static void kruskalMST(const Graph& g);
 };
