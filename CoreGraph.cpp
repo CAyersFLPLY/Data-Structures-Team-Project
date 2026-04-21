@@ -102,3 +102,35 @@ std::string Graph::extractState(const std::string& cityStr) {
     }
     return "";
 }
+
+Edge::Edge(int to, double dist, double cst) : toIndex(to), distance(dist), cost(cst) {}
+
+Airport::Airport(std::string c, std::string ct, std::string st)
+    : code(c), city(ct), state(st), inboundCount(0), outboundCount(0) {}
+
+int Graph::getNumAirports() const {
+    return airports.size();
+}
+
+const std::vector<std::vector<Edge>>& Graph::getAdj() const {
+    return adj;
+}
+
+const std::vector<Airport>& Graph::getAirports() const {
+    return airports;
+}
+
+std::string Graph::getStateOfAirport(int index) const {
+    return airports[index].state;
+}
+
+std::string Graph::getCodeOfAirport(int index) const {
+    return airports[index].code;
+}
+
+int Graph::findAirportIndex(const std::string& code) const {
+    for (int i = 0; i < (int)airports.size(); ++i) {
+        if (airports[i].code == code) return i;
+    }
+    return -1;
+}
