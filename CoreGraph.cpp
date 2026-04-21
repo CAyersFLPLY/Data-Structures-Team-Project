@@ -29,7 +29,7 @@ bool Graph::loadFromCSV(const std::string& filename) {
         // Handle Origin Airport: extract state for Task 3 logic [cite: 42, 67]
         int u = getAirportIndex(origin);
         if (u == -1) {
-            airports.push_back(Airport(origin, originCity, extractState(originCity)));
+            airports.push_back(Airport(origin, originCity, this->extractState(originCity)));
             adj.push_back(std::vector<Edge>());
             u = airports.size() - 1;
         }
@@ -37,7 +37,7 @@ bool Graph::loadFromCSV(const std::string& filename) {
         // Handle Destination Airport
         int v = getAirportIndex(dest);
         if (v == -1) {
-            airports.push_back(Airport(dest, destCity, extractState(destCity)));
+            airports.push_back(Airport(dest, destCity, this->extractState(destCity)));
             adj.push_back(std::vector<Edge>());
             v = airports.size() - 1;
         }
@@ -95,7 +95,7 @@ int Graph::getAirportIndex(const std::string& code) {
 /**
  * Helper: Extracts the state abbreviation from city string [cite: 67]
  */
-std::string Graph::extractState(const std::string& cityStr) {
+std::string Graph::extractState(const std::string& cityStr) const {
     size_t lastSpace = cityStr.find_last_of(' ');
     if (lastSpace != std::string::npos) {
         return cityStr.substr(lastSpace + 1);

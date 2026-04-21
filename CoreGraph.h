@@ -45,6 +45,7 @@ public:
 
     std::string getStateOfAirport(int index) const;
     std::string getCodeOfAirport(int index) const;
+    std::string extractState(const std::string& cityStr) const;
 
     int findAirportIndex(const std::string& code) const;
 };

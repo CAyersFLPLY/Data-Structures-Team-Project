@@ -104,9 +104,9 @@ static int calculatePathCost(const Graph& g, const vector<int>& path) {
         int u = path[i];
         int v = path[i + 1];
 
-        const vector<Edge>& neighbors = g.getAdjList()[u];
+        const vector<Edge>& neighbors = g.getAdj()[u];
         for (int j = 0; j < (int)neighbors.size(); j++) {
-            if (neighbors[j].dest == v) {
+            if (neighbors[j].toIndex == v) {
                 totalCost += neighbors[j].cost;
                 break;
             }
@@ -149,9 +149,9 @@ PathResult Routing::shortestPath(const Graph& g, int start, int end) {
             break;
         }
 
-        const vector<Edge>& neighbors = g.getAdjList()[u];
+        const vector<Edge>& neighbors = g.getAdj()[u];
         for (int i = 0; i < (int)neighbors.size(); i++) {
-            int v = neighbors[i].dest;
+            int v = neighbors[i].toIndex;
             int weight = neighbors[i].distance;
 
             if (dist[u] != INF && dist[u] + weight < dist[v]) {
@@ -201,9 +201,9 @@ vector<PathResult> Routing::shortestPathsToState(const Graph& g, int start, cons
             continue;
         }
 
-        const vector<Edge>& neighbors = g.getAdjList()[u];
+        const vector<Edge>& neighbors = g.getAdj()[u];
         for (int i = 0; i < (int)neighbors.size(); i++) {
-            int v = neighbors[i].dest;
+            int v = neighbors[i].toIndex;
             int weight = neighbors[i].distance;
 
             if (dist[u] != INF && dist[u] + weight < dist[v]) {
@@ -262,9 +262,9 @@ PathResult Routing::shortestPathWithStops(const Graph& g, int start, int end, in
                 continue;
             }
 
-            const vector<Edge>& neighbors = g.getAdjList()[u];
+            const vector<Edge>& neighbors = g.getAdj()[u];
             for (int i = 0; i < (int)neighbors.size(); i++) {
-                int v = neighbors[i].dest;
+                int v = neighbors[i].toIndex;
                 int weight = neighbors[i].distance;
 
                 if (best[u][edgesUsed] + weight < best[v][edgesUsed + 1]) {
