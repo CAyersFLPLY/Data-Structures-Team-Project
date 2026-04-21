@@ -1,4 +1,7 @@
-#include <CoreGraph.h>
+#ifndef SPANNING_H
+#define SPANNING_H
+
+#include "CoreGraph.h"
 #include <vector>
 
 class UndirectedEdge {
@@ -22,12 +25,9 @@ public:
 
 class Spanning {
 public:
-    // Task 6
     static std::vector<UndirectedEdge> buildUndirectedGraph(const Graph& g);
-
-    // Task 7 (Prim)
     static void primMST(const Graph& g);
-
-    // Task 8 (Kruskal)
     static void kruskalMST(const Graph& g);
 };
+
+#endif
