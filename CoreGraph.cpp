@@ -1,28 +1,24 @@
 #include "CoreGraph.h"
-#include <iomanip>
 
 /**
- * Task 1: Load data from airports.csv [cite: 37, 65]
- * Constructs a weighted directed graph where airports are nodes and flights are edges[cite: 27, 30].
+ * Task 1: Load graph from CSV [cite: 37, 65]
+ * Reads airports.csv to build the weighted directed graph.
  */
 bool Graph::loadFromCSV(const std::string& filename) {
     std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error: Could not open file " << filename << std::endl;
-        return false;
-    }
+    if (!file.is_open()) return false;
 
     std::string line;
-    // Skip the header row: Origin_airport, Destination_airport, Origin_city, Destination_city, Distance, Cost [cite: 65]
-    std::getline(file, line);
+    // Skip the header row [cite: 65]
+    if (!std::getline(file, line)) return false;
 
     while (std::getline(file, line)) {
         if (line.empty()) continue;
-
+        
         std::stringstream ss(line);
         std::string origin, dest, originCity, destCity, distStr, costStr;
 
-        // Parse CSV columns [cite: 65, 67]
+        // Tokenize the CSV columns [cite: 65]
         std::getline(ss, origin, ',');
         std::getline(ss, dest, ',');
         std::getline(ss, originCity, ',');
@@ -30,76 +26,79 @@ bool Graph::loadFromCSV(const std::string& filename) {
         std::getline(ss, distStr, ',');
         std::getline(ss, costStr, ',');
 
-        // Helper to add or find airport and return its index
-        int u = addOrFindAirport(origin, originCity);
-        int v = addOrFindAirport(dest, destCity);
+        // Handle Origin Airport: extract state for Task 3 logic [cite: 42, 67]
+        int u = getAirportIndex(origin);
+        if (u == -1) {
+            airports.push_back(Airport(origin, originCity, extractState(originCity)));
+            adj.push_back(std::vector<Edge>());
+            u = airports.size() - 1;
+        }
 
-        // Convert strings to double for weights [cite: 38]
-        double distance = std::stod(distStr);
-        double cost = std::stod(costStr);
+        // Handle Destination Airport
+        int v = getAirportIndex(dest);
+        if (v == -1) {
+            airports.push_back(Airport(dest, destCity, extractState(destCity)));
+            adj.push_back(std::vector<Edge>());
+            v = airports.size() - 1;
+        }
 
-        // Add directed edge to adjacency list [cite: 30, 37]
-        adj[u].push_back(Edge(v, distance, cost));
+        // Task 1: Add edge with two weights: Distance and Cost [cite: 37, 38]
+        try {
+            double distance = std::stod(distStr);
+            double cost = std::stod(costStr);
+            adj[u].push_back(Edge(v, distance, cost));
 
-        // Increment counts for Task 5 [cite: 47]
-        airports[u].outboundCount++;
-        airports[v].inboundCount++;
+            // Task 5: Track inbound/outbound for connection counts [cite: 47, 48]
+            airports[u].outboundCount++;
+            airports[v].inboundCount++;
+        } catch (...) {
+            continue; 
+        }
     }
-
     file.close();
     return true;
 }
 
 /**
- * Helper: Ensures each unique airport is added to the graph only once.
- */
-int Graph::addOrFindAirport(const std::string& code, const std::string& cityFull) {
-    int existingIdx = getAirportIndex(code);
-    if (existingIdx != -1) return existingIdx;
-
-    // Split "City, State" from the dataset 
-    size_t commaPos = cityFull.find(',');
-    std::string city = (commaPos != std::string::npos) ? cityFull.substr(0, commaPos) : cityFull;
-    std::string state = (commaPos != std::string::npos) ? cityFull.substr(commaPos + 2) : "";
-
-    airports.push_back(Airport(code, city, state));
-    adj.push_back(std::vector<Edge>()); // Add empty list for new node [cite: 20]
-    return airports.size() - 1;
-}
-
-/**
- * Task 5: Count and display total direct flight connections[cite: 47].
- * List is sorted by total connections (Inbound + Outbound) in descending order.
+ * Task 5: Display total direct connections sorted by highest count [cite: 48, 95]
  */
 void Graph::displayConnections() {
-    // Create an index vector for sorting to keep original airport order intact
-    std::vector<int> sortedIndices;
+    std::vector<int> indices;
     for (int i = 0; i < (int)airports.size(); ++i) {
-        sortedIndices.push_back(i);
+        indices.push_back(i);
     }
 
-    // Sort based on total connections (highest first) 
-    std::sort(sortedIndices.begin(), sortedIndices.end(), [this](int a, int b) {
+    // Sort based on total direct connections (inbound + outbound) [cite: 48]
+    std::sort(indices.begin(), indices.end(), [&](int a, int b) {
         int totalA = airports[a].inboundCount + airports[a].outboundCount;
         int totalB = airports[b].inboundCount + airports[b].outboundCount;
         return totalA > totalB;
     });
 
-    std::cout << "\n--- Airport Connection Counts (Task 5) ---\n";
-    std::cout << std::left << std::setw(10) << "Airport" << "Connections" << std::endl;
-    
-    for (int idx : sortedIndices) {
+    std::cout << "\"Airport\t\",\"Connections\"" << std::endl; // [cite: 95]
+    for (int idx : indices) {
         int total = airports[idx].inboundCount + airports[idx].outboundCount;
-        std::cout << std::left << std::setw(10) << airports[idx].code << total << std::endl;
+        std::cout << "\"" << airports[idx].code << "\t\",\"" << total << "\"" << std::endl;
     }
 }
 
 /**
- * Helper: Simple linear search for airport code since maps/hashes are STL.
+ * Helper: Find airport index by its code (e.g., "PIT")
  */
 int Graph::getAirportIndex(const std::string& code) {
     for (int i = 0; i < (int)airports.size(); ++i) {
         if (airports[i].code == code) return i;
     }
     return -1;
+}
+
+/**
+ * Helper: Extracts the state abbreviation from city string [cite: 67]
+ */
+std::string Graph::extractState(const std::string& cityStr) {
+    size_t lastSpace = cityStr.find_last_of(' ');
+    if (lastSpace != std::string::npos) {
+        return cityStr.substr(lastSpace + 1);
+    }
+    return "";
 }
