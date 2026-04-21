@@ -8,45 +8,45 @@
 #include <sstream>
 #include <algorithm>
 
-// Fundamental Structs [cite: 19, 20]
 struct Edge {
     int toIndex;
     double distance;
     double cost;
 
-    Edge(int to, double dist, double cst) : toIndex(to), distance(dist), cost(cst) {}
+    Edge(int to, double dist, double cst);
 };
 
 struct Airport {
-    std::string code;  // e.g., "ATL"
-    std::string city;  // e.g., "Atlanta"
-    std::string state; // e.g., "GA" [cite: 67]
-    int inboundCount = 0;
-    int outboundCount = 0;
+    std::string code;
+    std::string city;
+    std::string state;
+    int inboundCount;
+    int outboundCount;
 
-    Airport(std::string c, std::string ct, std::string st) 
-        : code(c), city(ct), state(st) {}
+    Airport(std::string c, std::string ct, std::string st);
 };
 
 class Graph {
 private:
     std::vector<Airport> airports;
-    std::vector<std::vector<Edge>> adj; // Adjacency list representation [cite: 20]
+    std::vector<std::vector<Edge>> adj;
 
-    // Private Helpers
     int getAirportIndex(const std::string& code);
-    std::string extractState(const std::string& cityStr);
+    int addOrFindAirport(const std::string& code, const std::string& cityFull);
 
 public:
-    // Task 1 & 5: CSV Parser and Graph Construction [cite: 37, 47]
     bool loadFromCSV(const std::string& filename);
-
-    // Task 5: Display sorted connection counts [cite: 48]
     void displayConnections();
 
-    // Getters for external algorithms (Dijkstra, MST, etc.)
-    const std::vector<Airport>& getAirports() const { return airports; }
-    const std::vector<std::vector<Edge>>& getAdjList() const { return adj; }
+    // REQUIRED FOR ROUTING + SPANNING
+    int getNumAirports() const;
+    const std::vector<std::vector<Edge>>& getAdj() const;
+    const std::vector<Airport>& getAirports() const;
+
+    std::string getStateOfAirport(int index) const;
+    std::string getCodeOfAirport(int index) const;
+
+    int findAirportIndex(const std::string& code) const;
 };
 
 #endif
