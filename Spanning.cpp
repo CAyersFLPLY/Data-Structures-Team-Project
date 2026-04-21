@@ -1,6 +1,3 @@
-#ifndef SPANNING_H
-#define SPANNING_H
-
 #include "Spanning.h"
 #include <iostream>
 
@@ -223,5 +220,3 @@ void Spanning::kruskalMST(const Graph& g) {
     }
     std::cout << "Total Cost of MST: " << totalCost << "\n\n";
 }
-
-#endif
